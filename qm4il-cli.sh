@@ -1,0 +1,156 @@
+#!/bin/bash 
+
+[ -f "$HOME/.qm4ilrc" ] && source "$HOME/.qm4ilrc"
+
+Qm4ilRequest () {
+    if [ -z "$Qm4ilApiKey" ]; then
+        echo "Missing API key. Please set 'Qm4ilApiKey' in ~/.qm4ilrc or export it."
+        return 1
+    fi
+
+    local resource=$1
+    if [ -z "$resource" ]; then
+        echo "Path is required"
+        return 1
+    fi
+    shift
+
+    curl \
+        --silent \
+        --location "$Qm4ilApiEndpoint/$resource" \
+        --header "Content-Type: application/json" \
+        --header "X-Api-Key: $Qm4ilApiKey" \
+        "$@" \
+        | jq
+}
+
+Qm4ilInboxes () {
+    Qm4ilRequest "inboxes" \
+        "$@"
+}
+
+Qm4ilAccount () {
+    Qm4ilRequest "me" \
+        "$@"
+}
+
+Qm4ilMe () {
+    Qm4ilAccount "$@"
+}
+
+Qm4ilCreateInbox () {
+    Qm4ilRequest "inboxes" \
+        --request POST \
+        --data "$@"
+}
+
+Qm4ilSendMessage () {
+    Qm4ilRequest "emails" \
+        --request POST \
+        --data "$@" \
+}
+
+Qm4ilReceiveUnreadMessage () {
+    local inboxID=${1:-$defaultInboxID}
+    if [ -z "$inboxID" ]; then
+        echo "Missing inbox ID. Provide one or set defaultInboxID in ~/.qm4ilrc."
+        return 1
+    fi
+    Qm4ilRequest "emails/unread/$inboxID/latest" \
+        "$@"
+}
+
+Qm4ilSendFortune () {
+
+    which fortune > /dev/null
+    if [ $? -ne 0 ]; then
+        echo "Please install fortune"
+        return 1
+    fi
+
+    local inboxID=${1:-$defaultInboxID}
+    if [ -z "$inboxID" ]; then
+        echo "Missing inbox ID. Provide one or set defaultInboxID in ~/.qm4ilrc."
+        return 1
+    fi
+    local from=${2:-"$defaultInboxID@qm4il.com"}
+    local text=$(fortune)
+    local subject=$(fortune -s -n 50)
+
+    local data=$(jq -n -c \
+        --arg from "$from" \
+        --arg inboxID "$inboxID" \
+        --arg text "$text" \
+        --arg subject "$subject"  '
+        {
+            from: $from,
+            inboxID: $inboxID,
+            text: $text,
+            subject: $subject
+        }'
+    )
+
+    Qm4ilSendEmail "$data"
+}
+
+Qm4ilFetchMessages () {
+    local inboxID=${1:-$defaultInboxID}
+    if [ -z "$inboxID" ]; then
+        echo "Missing inbox ID. Provide one or set defaultInboxID in ~/.qm4ilrc."
+        return 1
+    fi
+    local limit=${2:-20}
+    Qm4ilRequest "emails?inboxID=${inboxID}&limit=${limit}"
+}
+
+Qm4ilGetMessage () {
+    local messageID=$1
+    if [ -z "$messageID" ];then
+        echo messageID is required
+        return 1
+    fi
+    Qm4ilRequest "emails/$messageID"
+}
+
+Qm4ilReadMessage () {
+    local messageID=$1
+    if [ -z "$messageID" ];then
+        echo messageID is required
+        return 1
+    fi
+    Qm4ilRequest "emails/$messageID/read" \
+        --request PATCH
+}
+
+Qm4ilMarkUnread () {
+    local messageID=$1
+    if [ -z "$messageID" ];then
+        echo messageID is required
+        return 1
+    fi
+    Qm4ilRequest "emails/$messageID/unread" \
+        --request PATCH
+}
+
+Qm4ilInitConfig () {
+    local rcfile="$HOME/.qm4ilrc"
+    if [ -f "$rcfile" ]; then
+        echo "$rcfile already exists. Edit it manually if needed."
+        return
+    fi
+
+    echo "Initializing QM4IL config..."
+    echo -n "Enter your QM4IL API key: "
+    read Qm4ilApiKey
+    echo -n "Enter your default inbox ID: "
+    read Qm4ilDefaultInboxID
+
+    cat > "$rcfile" <<EOF
+# QM4IL CLI config
+Qm4ilApiKey="$Qm4ilApiKey"
+Qm4ilDefaultInboxID="$Qm4ilDefaultInboxID"
+Qm4ilApiEndpoint="https://api-staging.qm4il.com"  # Change to production when needed
+EOF
+
+    echo "Created $rcfile with provided values. You can update the endpoint when switching to production."
+}

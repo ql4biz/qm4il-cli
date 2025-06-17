@@ -51,7 +51,7 @@ Qm4ilSendMessage () {
 }
 
 Qm4ilReceiveUnreadMessage () {
-    local inboxID=${1:-$defaultInboxID}
+    local inboxID=${1:-$Qm4ilDefaultInboxID}
     if [ -z "$inboxID" ]; then
         echo "Missing inbox ID. Provide one or set defaultInboxID in ~/.qm4ilrc."
         return 1
@@ -68,12 +68,12 @@ Qm4ilSendFortune () {
         return 1
     fi
 
-    local inboxID=${1:-$defaultInboxID}
+    local inboxID=${1:-$Qm4ilDefaultInboxID}
     if [ -z "$inboxID" ]; then
         echo "Missing inbox ID. Provide one or set defaultInboxID in ~/.qm4ilrc."
         return 1
     fi
-    local from=${2:-"$defaultInboxID@qm4il.com"}
+    local from=${2:-"$Qm4ilDefaultInboxID@qm4il.com"}
     local text=$(fortune)
     local subject=$(fortune -s -n 50)
 
@@ -94,7 +94,7 @@ Qm4ilSendFortune () {
 }
 
 Qm4ilFetchMessages () {
-    local inboxID=${1:-$defaultInboxID}
+    local inboxID=${1:-$Qm4ilDefaultInboxID}
     if [ -z "$inboxID" ]; then
         echo "Missing inbox ID. Provide one or set defaultInboxID in ~/.qm4ilrc."
         return 1

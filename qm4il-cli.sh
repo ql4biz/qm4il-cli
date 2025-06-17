@@ -21,8 +21,6 @@ Qm4ilRequest () {
         --header "X-Api-Key: $Qm4ilApiKey" \
         "$@" \
         | jq
-
-        # --header "Content-Type: application/json" \
 }
 
 Qm4ilInboxes () {
@@ -41,7 +39,7 @@ Qm4ilMe () {
 
 Qm4ilCreateInbox () {
     Qm4ilRequest "inboxes" \
-        --request POST \
+        --request POST
 }
 
 Qm4ilGetInbox () {
@@ -53,7 +51,7 @@ Qm4ilSendMessage () {
     Qm4ilRequest "emails" \
         --request POST \
         --header 'Content-Type: application/json' \
-        --data "$@" \
+        --data "$@"
 }
 
 Qm4ilReceiveUnreadMessage () {

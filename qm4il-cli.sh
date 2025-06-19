@@ -38,8 +38,29 @@ Qm4ilMe () {
 }
 
 Qm4ilCreateInbox () {
-    Qm4ilRequest "inboxes" \
-        --request POST
+    local fqdn=${1:-""}
+    local inboxName=${2:-""}
+    
+    local body=""
+    if [ -n "$fqdn" ] || [ -n "$inboxName" ]; then
+        # we want to include in the json only the kyes with non empty values
+        if [ -n "$fqdn" ]; then
+            body=$(jq -n --arg fqdn "$fqdn" '{fqdn: $fqdn}')
+        fi
+        if [ -n "$inboxName" ]; then
+            body=$(jq -n --arg inboxName "$inboxName" '{inboxName: $inboxName}')
+        fi
+        if [ -n "$fqdn" ] && [ -n "$inboxName" ]; then
+            body=$(jq -n --arg fqdn "$fqdn" --arg inboxName "$inboxName" '{fqdn: $fqdn, inboxName: $inboxName}')
+        fi
+        Qm4ilRequest "inboxes" \
+            --request POST \
+            --header 'Content-Type: application/json' \
+            --data "$body"
+    else
+        Qm4ilRequest "inboxes" \
+            --request POST
+    fi  
 }
 
 Qm4ilGetInbox () {

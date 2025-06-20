@@ -38,29 +38,39 @@ Qm4ilMe () {
 }
 
 Qm4ilCreateInbox () {
-    local fqdn=${1:-""}
+    local arg1=${1:-""}
     local inboxName=${2:-""}
-    
+    local fqdn=""
+
+    # If first argument is an email, split into user and domain
+    if [[ "$arg1" =~ ^[^@]+@[^@]+$ ]]; then
+        inboxName="${arg1%@*}"
+        fqdn="${arg1#*@}"
+    else
+        fqdn="$arg1"
+    fi
+
+    local args=()
+    [ -n "$fqdn" ] && args+=(--arg fqdn "$fqdn")
+    [ -n "$inboxName" ] && args+=(--arg inboxName "$inboxName")
+
     local body=""
-    if [ -n "$fqdn" ] || [ -n "$inboxName" ]; then
-        # we want to include in the json only the kyes with non empty values
-        if [ -n "$fqdn" ]; then
-            body=$(jq -n --arg fqdn "$fqdn" '{fqdn: $fqdn}')
-        fi
-        if [ -n "$inboxName" ]; then
-            body=$(jq -n --arg inboxName "$inboxName" '{inboxName: $inboxName}')
-        fi
-        if [ -n "$fqdn" ] && [ -n "$inboxName" ]; then
-            body=$(jq -n --arg fqdn "$fqdn" --arg inboxName "$inboxName" '{fqdn: $fqdn, inboxName: $inboxName}')
-        fi
+    if [ -n "$fqdn" ] && [ -n "$inboxName" ]; then
+        body=$(jq -n "${args[@]}" '{fqdn: $fqdn, inboxName: $inboxName}')
+    elif [ -n "$fqdn" ]; then
+        body=$(jq -n "${args[@]}" '{fqdn: $fqdn}')
+    elif [ -n "$inboxName" ]; then
+        body=$(jq -n "${args[@]}" '{inboxName: $inboxName}')
+    fi
+
+    if [ -n "$body" ]; then
         Qm4ilRequest "inboxes" \
             --request POST \
             --header 'Content-Type: application/json' \
             --data "$body"
     else
-        Qm4ilRequest "inboxes" \
-            --request POST
-    fi  
+        Qm4ilRequest "inboxes" --request POST
+    fi
 }
 
 Qm4ilGetInbox () {

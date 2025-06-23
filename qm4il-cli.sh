@@ -2,6 +2,9 @@
 
 [ -f "$HOME/.qm4ilrc" ] && source "$HOME/.qm4ilrc"
 
+# curl --data '{ "email": "hello@ql4b.net" }' --header 'Content-Type: application/json' https://l0y7ami9jd.execute-api.eu-central-1.amazonaws.com/lead
+# curl --silent https://l0y7ami9jd.execute-api.eu-central-1.amazonaws.com/lead/verigy/2f5baf1e-2ba4-43e3-8af1-b0116acfec5b
+
 Qm4ilRequest () {
     if [ -z "$Qm4ilApiKey" ]; then
         echo "Missing API key. Please set 'Qm4ilApiKey' in ~/.qm4ilrc or export it."
@@ -128,7 +131,7 @@ Qm4ilSendFortune () {
         echo "Missing inbox ID. Provide one or set defaultInboxID in ~/.qm4ilrc."
         return 1
     fi
-    local from=${2:-"$Qm4ilDefaultInboxID@qm4il.com"}
+    local from=${2:-"$Qm4ilDefaultInboxID@mailmesh.cloud"}
     # local text=$(fortune)
     local text=$(fortune | sed 's/[\x00-\x1F]/ /g')
     # local subject=$(fortune -s -n 50)
@@ -208,7 +211,8 @@ Qm4ilApiKey="$Qm4ilApiKey"
 Qm4ilDefaultInboxID="$Qm4ilDefaultInboxID"
 Qm4ilBackofAttempts=5
 Qm4ilBackoffTimeout=1
-Qm4ilApiEndpoint="https://api-staging.qm4il.com"  # Change to production when needed
+# Qm4ilApiEndpoint="https://api-staging.qm4il.com"  # Change to production when needed
+Qm4ilApiEndpoint="https://api.mailmesh.cloud"  # Change to production when needed
 EOF
     source "$rcfile"
     echo "Created $rcfile with provided values. You can update the endpoint when switching to production."
@@ -246,3 +250,4 @@ with_backoff() {
     }
   done
 }
+

@@ -1,8 +1,12 @@
 # qm4il-cli
 
+QM4IL persistent email API shell client. 
+
 A minimal shell client for the QM4IL persistent email API — a simple, terminal-based way to receive, parse, and send messages programmatically using the QM4IL SaaS service.
 
 QM4IL offers programmatic access to your inboxes through a simple API. It's ideal for automating flows that involve receiving or validating emails — from testing user signups to running production bots like Bookish Bot's Ryanair account creator.
+
+[API Reference](https://docs.qm4il.com)
 
 ## Features
 

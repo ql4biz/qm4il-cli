@@ -2,9 +2,6 @@
 
 [ -f "$HOME/.qm4ilrc" ] && source "$HOME/.qm4ilrc"
 
-# curl --data '{ "email": "hello@ql4b.net" }' --header 'Content-Type: application/json' https://l0y7ami9jd.execute-api.eu-central-1.amazonaws.com/lead
-# curl --silent https://l0y7ami9jd.execute-api.eu-central-1.amazonaws.com/lead/verigy/2f5baf1e-2ba4-43e3-8af1-b0116acfec5b
-
 Qm4ilRequest () {
     if [ -z "$Qm4ilApiKey" ]; then
         echo "Missing API key. Please set 'Qm4ilApiKey' in ~/.qm4ilrc or export it."
@@ -132,9 +129,7 @@ Qm4ilSendFortune () {
         return 1
     fi
     local from=${2:-"$Qm4ilDefaultInboxID@mailmesh.cloud"}
-    # local text=$(fortune)
     local text=$(fortune | sed 's/[\x00-\x1F]/ /g')
-    # local subject=$(fortune -s -n 50)
     local subject=$(fortune -s -n 50 | sed 's/[\x00-\x1F]/ /g')
 
     local data=$(jq -n -c \
@@ -230,8 +225,6 @@ Qm4ilShowConfig () {
 }
 
 with_backoff() {
-#   local max_attempts=${ATTEMPTS-5}
-#   local timeout=${TIMEOUT-1}
   local max_attempts=${Qm4ilBackofAttempts-5}
   local timeout=${Qm4ilBackoffTimeout-1}
   local attempt=1
